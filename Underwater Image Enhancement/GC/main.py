@@ -6,12 +6,12 @@ import natsort
 import xlwt
 from skimage import exposure
 
-from GC.sceneRadianceGC import RecoverGC
+from sceneRadianceGC import RecoverGC
 
 np.seterr(over='ignore')
 if __name__ == '__main__':
     pass
-folder = "C:/Users/Administrator/Desktop/UnderwaterImageEnhancement/NonPhysical/GC"
+folder = "/home/june/Single-Underwater-Image-Enhancement-and-Color-Restoration"
 # folder = "C:/Users/Administrator/Desktop/Databases/Dataset"
 
 path = folder + "/InputImages"

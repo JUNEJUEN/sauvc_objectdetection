@@ -12,7 +12,7 @@ np.seterr(over='ignore')
 if __name__ == '__main__':
     pass
 # folder = "C:/Users/Administrator/Desktop/UnderwaterImageEnhancement/HE"
-folder = "C:/Users/Administrator/Desktop/UnderwaterImageEnhancement/NonPhysical/ClAHE"
+folder = "/home/june/Single-Underwater-Image-Enhancement-and-Color-Restoration"
 # folder = "C:/Users/Administrator/Desktop/Databases/Dataset"
 
 path = folder + "/InputImages"

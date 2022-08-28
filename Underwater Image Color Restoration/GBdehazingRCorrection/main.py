@@ -22,7 +22,7 @@ if __name__ == '__main__':
 starttime = datetime.datetime.now()
 
 # folder = "C:/Users/Administrator/Desktop/UnderwaterImageEnhancement/Physical/GBdehazingRCorrection"
-folder = "C:/Users/Administrator/Desktop/Databases/Dataset"
+folder = "/home/june/Single-Underwater-Image-Enhancement-and-Color-Restoration"
 path = folder + "/InputImages"
 files = os.listdir(path)
 files =  natsort.natsorted(files)
@@ -67,7 +67,7 @@ for i in range(len(files)):
         sceneRadiance = AdaptiveSceneRadiance(sceneRadiance, S_x)
         
         # print('sceneRadiance',sceneRadiance)
-        cv2.imwrite('OutputImages/' + prefix + 'GBDehazedRcoorectionUDCPAdaptiveMap.jpg', sceneRadiance)
+        cv2.imwrite('OutputImages/' + prefix + '_GBDehazedRcoorectionUDCPAdaptiveMap.jpg', sceneRadiance)
 
 
 Endtime = datetime.datetime.now()

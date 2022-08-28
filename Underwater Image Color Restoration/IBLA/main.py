@@ -26,7 +26,7 @@ if __name__ == '__main__':
     pass
 
 starttime = datetime.datetime.now()
-folder = "C:/Users/Administrator/Desktop/UnderwaterImageEnhancement/Physical/IBLA"
+folder = "/home/june/Single-Underwater-Image-Enhancement-and-Color-Restoration"
 # folder = "C:/Users/Administrator/Desktop/Databases/Dataset"
 path = folder + "/InputImages"
 files = os.listdir(path)

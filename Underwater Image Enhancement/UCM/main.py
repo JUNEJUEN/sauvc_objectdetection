@@ -16,7 +16,7 @@ if __name__ == '__main__':
     pass
 
 # folder = "C:/Users/Administrator/Desktop/UnderwaterImageEnhancement/NonPhysical/UCM"
-folder = "C:/Users/Administrator/Desktop/Databases/Dataset"
+folder = "/home/june/Single-Underwater-Image-Enhancement-and-Color-Restoration"
 
 path = folder + "/InputImages"
 files = os.listdir(path)
@@ -38,6 +38,6 @@ for i in range(len(files)):
         sceneRadiance = sceneRadianceRGB(sceneRadiance)
         cv2.imwrite('OutputImages/' + prefix + '_UCM.jpg', sceneRadiance)
 
-endtime = datetime.datetime.now()
-time = endtime-starttime
-print('time',time)
+#endtime = datetime.datetime.now()
+#time = endtime-starttime
+#print('time',time)
