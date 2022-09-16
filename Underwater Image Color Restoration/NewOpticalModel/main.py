@@ -17,7 +17,7 @@ if __name__ == '__main__':
     pass
 
 
-folder = "/home/june/Single-Underwater-Image-Enhancement-and-Color-Restoration"
+folder = "/home/kyapo/Desktop/sauvc_objectdetection"
 # folder = "C:/Users/Administrator/Desktop/Databases/Dataset"
 path = folder + "/InputImages"
 files = os.listdir(path)

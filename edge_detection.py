@@ -5,6 +5,39 @@ from cv2 import GaussianBlur
 from cv2 import Canny
 import numpy as np
 import array as arr
+import os
+import natsort
+
+
+def find_rectangle(img, frame):
+    lines_edges = frame.copy()
+
+    contours, _hierarchy = cv2.findContours(img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    print("轮廓数量：%d" % len(contours))
+
+    # 轮廓遍历
+    for cnt in contours:
+        
+        rect = cv2.minAreaRect(cnt)
+        box = cv2.boxPoints(rect)
+        box = np.int0(box)
+        print("point", box)
+        for point in range(4):
+            if point < 3:
+                x1 = box[point][0]
+                y1 = box[point][1]
+                x2 = box[point+1][0]
+                y2 = box[point+1][1]
+            else :
+                x1 = box[point][0]
+                y1 = box[point][1]
+                x2 = box[0][0]
+                y2 = box[0][1]
+
+            cv2.line(lines_edges,(x1,y1),(x2,y2),(0,255,0),2)
+    cv2.imshow('lines',lines_edges)
+    cv2.waitKey(1)
+        
 
 def salt(img,n):
     for k in range(n):
@@ -18,36 +51,56 @@ def salt(img,n):
             img[j,i,2] = 255
     return img
 
-path = './OutputImages/gate_LowComplexityDCP.jpg'
-frame = cv2.imread(path)
-scale_percent = 40 # percent of original size
-width = int(frame.shape[1] * scale_percent / 100)
-height = int(frame.shape[0] * scale_percent / 100)
-frame = cv2.resize(frame, (width, height))
+def RecoverHE(sceneRadiance):
+    # clahe = cv2.createCLAHE(clipLimit=2, tileGridSize=(2, 2))
+    for i in range(3):
+        sceneRadiance[:, :, i] =  cv2.equalizeHist(sceneRadiance[:, :, i])
+        # sceneRadiance[:, :, i] = clahe.apply((sceneRadiance[:, :, i]))
+    return sceneRadiance
 
-cv2.imshow('Original',frame)
-cv2.waitKey(0)
-cv2.destroyWindow('Original')
+path = "/home/kyapo/Desktop/navigation/stereo_calibration/pooltesting_stereo_video_27_8/q_gate1/"
+files = os.listdir(path)
+files =  natsort.natsorted(files)
 
+for i in range(len(files)):
+    file = files[i]
+    img = cv2.imread(path+file)
+    frame = RecoverHE(img)
+    
+    scale_percent = 80 # percent of original size
+    width = int(frame.shape[1] * scale_percent / 100)
+    height = int(frame.shape[0] * scale_percent / 100)
+    frame = cv2.resize(frame, (width, height))
 
-# Color filtering
-Min = np.array([0, 19,  0])
-Max = np.array([106, 255, 255])
-mask = cv2.inRange(frame, Min, Max)
-result = cv2.bitwise_and(frame, frame, mask=mask)
+    cv2.imshow('Original',frame)
+    cv2.waitKey(1)
 
-cv2.imshow('Color filtering', result)
-cv2.waitKey(0)
-cv2.destroyWindow('Color filtering')
+    # Convert color space
+    frame = cv2.cvtColor(frame,cv2.COLOR_BGR2HSV)
 
-# Thresholding
-thresh = 0
-maxValue = 255
-processed_frame, thresholding_image = cv2.threshold(result, thresh, maxValue, cv2.THRESH_BINARY)
+    # Color filtering
+    Min = np.array([0, 128,  58])
+    Max = np.array([47, 255, 255])
+    mask = cv2.inRange(frame, Min, Max)
+    result = cv2.bitwise_and(frame, frame, mask=mask)
 
-cv2.imshow('Thresholding', thresholding_image)
-cv2.waitKey(0)
-cv2.destroyWindow('Thresholding')
+    cv2.imshow('Color filtering', result)
+    cv2.waitKey(1)
+
+    # Thresholding
+    result = cv2.cvtColor(result, cv2.COLOR_HSV2BGR)
+    result = cv2.cvtColor(result, cv2.COLOR_BGR2GRAY)
+    thresh = 0
+    maxValue = 255
+    processed_frame, thresholding_image = cv2.threshold(result, thresh, maxValue, cv2.THRESH_BINARY)
+
+    #thresholding_image = salt(thresholding_image, 10)
+    thresholding_image= cv2.dilate(thresholding_image,(9,9), iterations=10)
+
+    cv2.imshow('Thresholding',thresholding_image )
+    cv2.waitKey(1)
+
+    find_rectangle(thresholding_image, frame)
 
 
 
@@ -71,8 +124,8 @@ while True:
     k1 = cv2.getTrackbarPos('k1','Edges_gaussian')
     k2 = cv2.getTrackbarPos('k2','Edges_gaussian')
     sigmaX = cv2.getTrackbarPos('sigmaX','Edges_gaussian')
-    threshold1_g = cv2.getTrackbarPos('threshold1_g','Edges_median') 
-    threshold2_g = cv2.getTrackbarPos('threshold2_g','Edges_median') 
+    threshold1_g = cv2.getTrackbarPos('threshold1_g','Edges_gaussian') 
+    threshold2_g = cv2.getTrackbarPos('threshold2_g','Edges_gaussian') 
 
     if ksize % 2 == 0:
         ksize += 1
@@ -98,7 +151,7 @@ cv2.destroyAllWindows()
 
 # Line detection
 cv2.namedWindow('lines',cv2.WINDOW_AUTOSIZE)
-cv2.createTrackbar('threshold', 'lines', 0, 100, lambda x: None)
+cv2.createTrackbar('threshold', 'lines', 0, 200, lambda x: None)
 cv2.createTrackbar('minLineLength', 'lines', 10, 200, lambda x: None)
 cv2.createTrackbar('maxLineGap','lines',5, 100, lambda x: None)
 
@@ -109,18 +162,39 @@ while True:
     rho = 1
     theta = np.pi /180
 
-
-    lines = cv2.HoughLinesP(edges_gaussian, rho, theta, threshold, np.array([]),minLineLength, maxLineGap)
-
     lines_edges = frame.copy()
 
+    #lines = cv2.HoughLinesP(edges_median, rho, theta, threshold, np.array([]),minLineLength, maxLineGap)
+    lines = cv2.HoughLines(edges_median,rho , theta, threshold)
     for line in lines:
-        for x1,y1,x2,y2 in line:
-            cv2.line(lines_edges,(x1,y1),(x2,y2),(0,255,0),2)
+        rho,theta = line[0]
+        a = np.cos(theta)
+        b = np.sin(theta)
+        x0 = a*rho
+        y0 = b*rho
+        x1 = int(x0 + 1000*(-b))
+        y1 = int(y0 + 1000*(a))
+        x2 = int(x0 - 1000*(-b))
+        y2 = int(y0 - 1000*(a))
+        cv2.line(lines_edges,(x1,y1),(x2,y2),(0,0,255),2)
+
+    
+
+    #for line in lines:
+    #    for x1,y1,x2,y2 in line:
+    #        cv2.line(lines_edges,(x1,y1),(x2,y2),(0,255,0),2)
 
     cv2.imshow('lines',lines_edges)
     key = cv2.waitKey(1)
     if key == 27:
             break
-    
+
+
+find_rectangle(edges_median, frame)
+
+#cv2.drawContours( img, squares, -1, (0, 0, 255), 2 )
+#cv2.imshow('squares', img)
+#cv2.waitKey()
 cv2.destroyAllWindows()
+
+

@@ -22,7 +22,7 @@ def showPixelValue(event,x,y,flags,param):
     
     if event == cv2.EVENT_MOUSEMOVE:
         # get the value of pixel from the location of mouse in (x,y)
-         bgr = frame[x,y]
+         bgr = frame[y, x]
 
          # Convert the BGR pixel into other colro formats
          ycb = cv2.cvtColor(np.uint8([[bgr]]),cv2.COLOR_BGR2YCrCb)[0][0]
@@ -54,9 +54,9 @@ if __name__ == '__main__' :
     # Color detection
     while(1):
          #processed_frame, frame = cap.read()
-         path = './OutputImages/gate_LowComplexityDCP.jpg'
+         path = './OutputImages/0_CLAHE.jpg'
          frame = cv2.imread(path)
-         scale_percent = 40 # percent of original size
+         scale_percent = 50 # percent of original size
          width = int(frame.shape[1] * scale_percent / 100)
          height = int(frame.shape[0] * scale_percent / 100)
          frame = cv2.resize(frame, (width, height))
@@ -109,11 +109,11 @@ if __name__ == '__main__' :
             print(minLAB)     #plz check the terminal
             print(maxLAB)
 
-            #frame = cv2.cvtColor(frame,cv2.COLOR_BGR2LAB)
+            img = cv2.cvtColor(frame,cv2.COLOR_BGR2HSV)
 
             # Create the mask using the min and max values obtained from trackbar and apply bitwise and operation to get the results         
-            maskLAB = cv2.inRange(frame,minLAB,maxLAB)
-            resultLAB = cv2.bitwise_and(frame, frame, mask = maskLAB)
+            maskLAB = cv2.inRange(img,minLAB,maxLAB)
+            resultLAB = cv2.bitwise_and(img, img, mask = maskLAB)
             
             # Show the results
             cv2.imshow('SelectLAB',resultLAB)

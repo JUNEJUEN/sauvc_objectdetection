@@ -16,7 +16,7 @@ if __name__ == '__main__':
     pass
 
 # folder = "C:/Users/Administrator/Desktop/UnderwaterImageEnhancement/NonPhysical/UCM"
-folder = "/home/june/Single-Underwater-Image-Enhancement-and-Color-Restoration"
+folder = "/home/kyapo/Desktop/sauvc_objectdetection"
 
 path = folder + "/InputImages"
 files = os.listdir(path)

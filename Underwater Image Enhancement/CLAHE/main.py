@@ -12,7 +12,7 @@ np.seterr(over='ignore')
 if __name__ == '__main__':
     pass
 # folder = "C:/Users/Administrator/Desktop/UnderwaterImageEnhancement/HE"
-folder = "/home/june/Single-Underwater-Image-Enhancement-and-Color-Restoration"
+folder = "/home/kyapo/Desktop/sauvc_objectdetection"
 # folder = "C:/Users/Administrator/Desktop/Databases/Dataset"
 
 path = folder + "/InputImages"
@@ -29,4 +29,4 @@ for i in range(len(files)):
         img = cv2.imread(folder + '/InputImages/' + file)
         sceneRadiance = RecoverCLAHE(img)
         # cv2.imwrite('OutputImages/' + prefix + '_CLAHE.jpg', sceneRadiance)
-        cv2.imwrite('Temps/' + prefix + '_CLAHE.jpg', sceneRadiance)
+        cv2.imwrite('OutputImages/' + prefix + '_CLAHE.jpg', sceneRadiance)
