@@ -1,5 +1,6 @@
 from cmath import rect
 import re
+from reprlib import recursive_repr
 import cv2
 import numpy as np
 import array as arr
@@ -69,7 +70,7 @@ class Rectangle():
 
 
 
-def find_rectangle_left(img, frame):
+def find_rectangle_left(img, frame, h):
     original = frame.copy()
 
     contours, _hierarchy = cv2.findContours(img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -87,9 +88,10 @@ def find_rectangle_left(img, frame):
     if len(rectangle_list) < 2:
         return None
 
+    # Only consider the largest 4 rectangles
     possible_gate = []
     if len(rectangle_list) >= 4:
-        for i in range(4):      # Only consider the largest 4 rectangles
+        for i in range(4):      
             if rectangle_list[i].slope == -1 or rectangle_list[i].slope > 11:               #tan(85) = 11  
                 possible_gate += [rectangle_list[i]]
     else:
@@ -107,21 +109,31 @@ def find_rectangle_left(img, frame):
     if abs(possible_gate[0].left_top_pt[1] - possible_gate[1].left_top_pt[1]) > 150 :
         return None
 
+    # Only consider the lowest two.
     most_possible_gate = []
     for i in range(2):
         most_possible_gate += [possible_gate[i]]
 
+    # Sorting them accoring to x coordinate
     most_possible_gate.sort(key=lambda x : x.left_top_pt[0]) 
     
+    # Validation check : whether the gate area is too small
+    gate_area = (most_possible_gate[1].right_bottom_pt[1] - most_possible_gate[0].left_top_pt[1]) * (most_possible_gate[1].right_bottom_pt[0] - most_possible_gate[0].left_top_pt[0])
+    if gate_area <= 10000:
+        return None
+
+    gate_info = (most_possible_gate[0].left_top_pt, most_possible_gate[1].right_bottom_pt, gate_area)
+    print("gate_info:", gate_info)
+
+    # Drawing the rectangles
     for  rectangle in most_possible_gate:
-        #print(rectangle.box)
         original = rectangle.drawing(original)  
     cv2.imshow('left_rectangle',original)
     cv2.waitKey(1)
 
-    return most_possible_gate
+    return gate_info
 
-def find_rectangle_right(img, frame):
+def find_rectangle_right(img, frame, h):
     original = frame.copy()
 
     contours, _hierarchy = cv2.findContours(img, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -139,9 +151,10 @@ def find_rectangle_right(img, frame):
     if len(rectangle_list) < 2:
         return None
 
+    # Only consider the largest 4 rectangles
     possible_gate = []
     if len(rectangle_list) >= 4:
-        for i in range(4):      # Only consider the largest 4 rectangles
+        for i in range(4):      
             if rectangle_list[i].slope == -1 or rectangle_list[i].slope > 11:               #tan(85) = 11  
                 possible_gate += [rectangle_list[i]]
     else:
@@ -159,37 +172,53 @@ def find_rectangle_right(img, frame):
     if abs(possible_gate[0].left_top_pt[1] - possible_gate[1].left_top_pt[1]) > 150 :
         return None
 
+    # Only consider the lowest two.
     most_possible_gate = []
     for i in range(2):
         most_possible_gate += [possible_gate[i]]
 
+    # Sorting them accoring to x coordinate
     most_possible_gate.sort(key=lambda x : x.left_top_pt[0]) 
     
+    # Validation check : whether the gate area is too small
+    gate_area = (most_possible_gate[1].right_bottom_pt[1] - most_possible_gate[0].left_top_pt[1]) * (most_possible_gate[1].right_bottom_pt[0] - most_possible_gate[0].left_top_pt[0])
+    if gate_area <= 10000:
+        return None
+
+    #gate_mid_pt = 
+    
+    gate_info = (most_possible_gate[0].left_top_pt, most_possible_gate[1].right_bottom_pt, gate_area)
+    print("gate_info:", gate_info)
+
+    # Drawing the rectangles
     for  rectangle in most_possible_gate:
-        #print(rectangle.box)
         original = rectangle.drawing(original)  
     cv2.imshow('left_rectangle',original)
     cv2.waitKey(1)
 
-    return most_possible_gate
+    return gate_info
 
 
-path = "/home/kyapo/Desktop/navigation/stereo_calibration/pooltesting_stereo_video_27_8/q_gate3/"
+path = "/home/kyapo/Desktop/navigation/stereo_calibration/pooltesting_stereo_video_27_8/q_gate4/"
 files = os.listdir(path)
 files =  natsort.natsorted(files)
+
+height = 1080
+middle = 1920
+width = 3840
 
 for i in range(len(files)):
     file = files[i]
     img = cv2.imread(path+file)
     frame = RecoverHE(img)
     
-    scale_percent = 100 # percent of original size
-    width = int(frame.shape[1] * scale_percent / 100)
-    height = int(frame.shape[0] * scale_percent / 100)
-    frame = cv2.resize(frame, (width, height))
+    #scale_percent = 100 # percent of original size
+    #width = int(frame.shape[1] * scale_percent / 100)
+    #height = int(frame.shape[0] * scale_percent / 100)
+    #frame = cv2.resize(frame, (width, height))
 
-    cv2.imshow('Original',frame)
-    cv2.waitKey(1)
+    #cv2.imshow('Original',frame)
+    #cv2.waitKey(1)
 
     # Convert color space
     frame = cv2.cvtColor(frame,cv2.COLOR_BGR2HSV)
@@ -200,8 +229,8 @@ for i in range(len(files)):
     mask = cv2.inRange(frame, Min, Max)
     result = cv2.bitwise_and(frame, frame, mask=mask)
 
-    cv2.imshow('Color filtering', result)
-    cv2.waitKey(1)
+    #cv2.imshow('Color filtering', result)
+    #cv2.waitKey(1)
 
     # Thresholding
     result = cv2.cvtColor(result, cv2.COLOR_HSV2BGR)
@@ -213,28 +242,26 @@ for i in range(len(files)):
     #thresholding_image = salt(thresholding_image, 10)
     thresholding_image= cv2.dilate(thresholding_image,(9,9), iterations=10)
 
-    cv2.imshow('Thresholding',thresholding_image )
-    cv2.waitKey(1)
+    #cv2.imshow('Thresholding',thresholding_image )
+    #cv2.waitKey(1)
 
-    left_frame = frame[0:720, 0: 1280]
-    thresholding_left = thresholding_image[0:720, 0: 1280]
-    right_frame = frame[0:720, 1280:2560]
-    thresholding_right = thresholding_image[0:720, 1280:2560]
+    left_frame = frame[0:height, 0: middle]
+    thresholding_left = thresholding_image[0:height, 0: middle]
+    right_frame = frame[0:height, middle:width]
+    thresholding_right = thresholding_image[0:height, middle:width]
+
 
     #gate = find_rectangle(thresholding_image, frame)
-    gate_left = find_rectangle_left(thresholding_left, left_frame)
-    gate_right = find_rectangle_right(thresholding_right, right_frame)
+    gate_left = find_rectangle_left(thresholding_left, left_frame, height)
+    gate_right = find_rectangle_right(thresholding_right, right_frame, height)
 
     
     if gate_left is not None:
-        gate_left_location = (gate_left[0].left_top_pt, gate_left[1].right_bottom_pt)
-        left_frame = cv2.rectangle(left_frame, gate_left_location[0], gate_left_location[1], (255, 0,0), 2)
+        left_frame = cv2.rectangle(left_frame, gate_left[0], gate_left[1], (255, 0,0), 2)
         cv2.imshow('gate_left', left_frame)
         cv2.waitKey(1)
 
     if gate_right is not None:
-        gate_right_location = (gate_right[0].left_top_pt, gate_right[1].right_bottom_pt)
-        right_frame = cv2.rectangle(right_frame, gate_right_location[0], gate_right_location[1], (255, 0,0), 2)
+        right_frame = cv2.rectangle(right_frame, gate_right[0], gate_right[1], (255, 0,0), 2)
         cv2.imshow('gate_right', right_frame)
         cv2.waitKey(1)
-@
