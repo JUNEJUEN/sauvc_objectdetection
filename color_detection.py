@@ -29,7 +29,7 @@ def showPixelValue(event,x,y,flags,param):
          lab = cv2.cvtColor(np.uint8([[bgr]]),cv2.COLOR_BGR2Lab)[0][0]
          hsv = cv2.cvtColor(np.uint8([[bgr]]),cv2.COLOR_BGR2HSV)[0][0]
 
-         print(lab)
+         print(hsv)
         
          # Create an empty placeholder for displaying the values
          placeholder = np.zeros((frame.shape[0],400,3),dtype=np.uint8)
@@ -54,7 +54,7 @@ if __name__ == '__main__' :
     # Color detection
     while(1):
          #processed_frame, frame = cap.read()
-         path = './OutputImages/0_CLAHE.jpg'
+         path = '.\\OutputImages_gate\\513_HE.jpg'
          frame = cv2.imread(path)
          scale_percent = 50 # percent of original size
          width = int(frame.shape[1] * scale_percent / 100)
@@ -109,7 +109,7 @@ if __name__ == '__main__' :
             print(minLAB)     #plz check the terminal
             print(maxLAB)
 
-            img = cv2.cvtColor(frame,cv2.COLOR_BGR2HSV)
+            img = cv2.cvtColor(frame,cv2.COLOR_BGR2LAB)
 
             # Create the mask using the min and max values obtained from trackbar and apply bitwise and operation to get the results         
             maskLAB = cv2.inRange(img,minLAB,maxLAB)
